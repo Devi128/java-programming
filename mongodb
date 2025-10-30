@@ -1,0 +1,47 @@
+// Import the MongoDB driver
+const { MongoClient } = require("mongodb");
+
+// Replace <password> with your real MongoDB Atlas password
+const uri = "mongodb+srv://LakshmiDevi:<password>@cluster0.usxufs9.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0";
+
+// Create a MongoClient object using the connection string
+const client = new MongoClient(uri);
+
+async function run() {
+  try {
+    // Step 1: Connect to MongoDB Atlas
+    await client.connect();
+    console.log("Connected to MongoDB Atlas");
+
+    // Step 2: Create/select database 'schoolDB'
+    const db = client.db("schoolDB");
+
+    // Step 3: Create/select collection 'students'
+    const students = db.collection("students");
+
+    // Step 4: Create another collection 'teachers'
+    await db.createCollection("teachers");
+    console.log("'teachers' collection created in 'schoolDB'");
+
+    // Step 5: Insert a document into 'students'
+    await students.insertOne({ name: "Alice", grade: "A" });
+    console.log(" Inserted a document into 'students' collection");
+
+    // Step 6: Drop the 'teachers' collection
+    await db.collection("teachers").drop();
+    console.log(" 'teachers' collection dropped");
+
+    // Step 7: Drop the entire 'schoolDB' database
+    await db.dropDatabase();
+    console.log("'schoolDB' database dropped");
+  } catch (error) {
+    console.error(" Error:", error);
+  } finally {
+    // Step 8: Close the connection
+    await client.close();
+    console.log("🔒 Connection closed");
+  }
+}
+
+// Run the function
+run();
