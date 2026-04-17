@@ -1,0 +1,63 @@
+Algorithm:
+1. Read the plaintext message to be encrypted.
+2. Generate a 128-bit Blowfish secret key using KeyGenerator.
+3. 3. During key initialization, the P-array (18 subkeys of 32 bits each) and four S-Boxes 
+(each with 256 entries of 32 bits) are populated using the key.
+4. Divide the 64-bit plaintext block into two 32-bit halves: Left (L) and Right (R).
+5. Perform 16 rounds of the Feistel network: XOR L with the P-array entry, pass the result 
+through the F-function (which uses four S-Box lookups and additions), and XOR with 
+R; then swap L and R.
+6. After 16 rounds, apply the output whitening step: swap L and R back, then XOR with 
+P17 and P18.
+7. Combine the two 32-bit halves to produce the 64-bit ciphertext block.
+8. Encode the ciphertext bytes to Base64 for readable display.
+9. For decryption, use the same algorithm with P-array subkeys applied in reverse order 
+(P18 to P1).
+10. Display the original text, key, encrypted ciphertext, and decrypted plaintext.
+Java Program:
+import javax.crypto.Cipher;
+import javax.crypto.KeyGenerator;
+import javax.crypto.SecretKey;
+import java.util.Base64;
+public class BlowfishAlgorithm {
+ // Generate a Blowfish secret key
+ public static SecretKey generateKey() throws Exception {
+ KeyGenerator keyGen = KeyGenerator.getInstance("Blowfish");
+ keyGen.init(128); // Key size: 32 to 448 bits; 128 bits recommended
+ return keyGen.generateKey();
+ }
+ // Encrypt plaintext using Blowfish
+ public static String encrypt(String plainText, SecretKey key) throws Exception {
+ Cipher cipher = Cipher.getInstance("Blowfish/ECB/PKCS5Padding");
+ cipher.init(Cipher.ENCRYPT_MODE, key);
+byte[] encryptedBytes = cipher.doFinal(plainText.getBytes("UTF-8"));
+ return Base64.getEncoder().encodeToString(encryptedBytes);
+ }
+ // Decrypt ciphertext using Blowfish
+ public static String decrypt(String cipherText, SecretKey key) throws Exception {
+ Cipher cipher = Cipher.getInstance("Blowfish/ECB/PKCS5Padding");
+ cipher.init(Cipher.DECRYPT_MODE, key);
+ byte[] decryptedBytes =
+ cipher.doFinal(Base64.getDecoder().decode(cipherText));
+ return new String(decryptedBytes, "UTF-8");
+ }
+ public static void main(String[] args) {
+ try {
+ String plainText = "Cryptography and Network Security";
+ System.out.println("Original Text : " + plainText);
+ // Generate Blowfish Key
+ SecretKey secretKey = generateKey();
+ System.out.println("Blowfish Key (Base64): " +
+ Base64.getEncoder().encodeToString(secretKey.getEncoded()));
+ // Encrypt
+ String encrypted = encrypt(plainText, secretKey);
+ System.out.println("Encrypted Text : " + encrypted);
+ // Decrypt
+ String decrypted = decrypt(encrypted, secretKey);
+ System.out.println("Decrypted Text : " + decrypted);
+ } catch (Exception e) {
+System.out.println("Error: " + e.getMessage());
+ e.printStackTrace();
+ }
+ }
+}
